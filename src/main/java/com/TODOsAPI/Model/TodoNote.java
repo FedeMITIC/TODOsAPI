@@ -13,6 +13,8 @@ public class TodoNote {
     private String body;
     private Enum<STATUS> status;
     private String lastModification;
+    private String markedForDeletion;
+    private static final int deleteAfterDay = 30;
 
     public enum STATUS {
         CREATED,    // A TODOnote has been created

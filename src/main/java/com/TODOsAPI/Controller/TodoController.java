@@ -73,10 +73,10 @@ public class TodoController {
     }
 
     @SneakyThrows
-    @PatchMapping("/todos/pin/{id}")
+    @PatchMapping("/todos/{id}/pin")
     public ResponseEntity<?> pinItem(@PathVariable Long id) {
         TodoNote note = this.repo.findById(id).orElseThrow(() -> new TodoNotFoundException(id));
-        if (note.getStatus() == TodoNote.STATUS.CREATED) {  // A note can be pinned if and only if is not archived/deleted or already pinned
+        if (note.getStatus() == TodoNote.STATUS.CREATED) {  // A note can be pinned if and only if is not archived/deleted
             note.setStatus(TodoNote.STATUS.PINNED);         // Do not edit other fields
             return ResponseEntity.ok(assembler.toModel(this.repo.save(note)));
         }
@@ -90,7 +90,16 @@ public class TodoController {
     }
 
     @SneakyThrows
-    @PatchMapping("/todos/archive/{id}")
+    @PatchMapping("/todos/{id}/reset")
+    public ResponseEntity<?> resetItem(@PathVariable Long id) {
+        TodoNote note = this.repo.findById(id).orElseThrow(() -> new TodoNotFoundException(id));
+        note.setStatus(TodoNote.STATUS.CREATED);  // Reset the item to its initial state
+        note.setMarkedForDeletion(null);          // Remove the marked for deletion date
+        return ResponseEntity.ok(assembler.toModel(this.repo.save(note)));
+    }
+
+    @SneakyThrows
+    @PatchMapping("/todos/{id}/archive")
     public ResponseEntity<?> archiveItem(@PathVariable Long id) {
         TodoNote note = this.repo.findById(id).orElseThrow(() -> new TodoNotFoundException(id));
         if (note.getStatus() == TodoNote.STATUS.PINNED || note.getStatus() == TodoNote.STATUS.CREATED) {
@@ -107,11 +116,12 @@ public class TodoController {
     }
 
     @SneakyThrows
-    @PatchMapping("/todos/delete/{id}")
+    @PatchMapping("/todos/{id}/delete")
     public ResponseEntity<?> markItemForDeletion(@PathVariable Long id) {
         TodoNote note = this.repo.findById(id).orElseThrow(() -> new TodoNotFoundException(id));
         if (note.getStatus() != TodoNote.STATUS.DELETED) {  // A note can be marked for deletion if and only if it is not marked already
             note.setStatus(TodoNote.STATUS.DELETED);
+            note.setMarkedForDeletion(new java.util.Date().toString());
             return ResponseEntity.ok(assembler.toModel(this.repo.save(note)));
         }
         return ResponseEntity

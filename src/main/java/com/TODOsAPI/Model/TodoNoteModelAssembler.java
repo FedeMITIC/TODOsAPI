@@ -13,6 +13,29 @@ public class TodoNoteModelAssembler implements RepresentationModelAssembler<Todo
     public EntityModel<TodoNote> toModel(TodoNote todo) {
         EntityModel<TodoNote> entityModel = EntityModel.of(todo,
             linkTo(methodOn(TodoController.class).getSingleItemById(todo.getId())).withSelfRel(),
-                linkTo(methodOn(TodoController.class).getAllItems()).withRel("todos"));
+            linkTo(methodOn(TodoController.class).getAllItems()).withRel("todos"));
+
+        if (todo.getStatus() == TodoNote.STATUS.CREATED) {
+            entityModel.add(linkTo(methodOn(TodoController.class).pinItem(todo.getId())).withRel("pin"));
+            entityModel.add(linkTo(methodOn(TodoController.class).archiveItem(todo.getId())).withRel("archive"));
+            entityModel.add(linkTo(methodOn(TodoController.class).markItemForDeletion(todo.getId())).withRel("delete"));
+        }
+
+        if (todo.getStatus() == TodoNote.STATUS.PINNED) {
+            entityModel.add(linkTo(methodOn(TodoController.class).resetItem(todo.getId())).withRel("reset"));
+            entityModel.add(linkTo(methodOn(TodoController.class).archiveItem(todo.getId())).withRel("archive"));
+            entityModel.add(linkTo(methodOn(TodoController.class).markItemForDeletion(todo.getId())).withRel("delete"));
+        }
+
+        if (todo.getStatus() == TodoNote.STATUS.ARCHIVED) {
+            entityModel.add(linkTo(methodOn(TodoController.class).resetItem(todo.getId())).withRel("reset"));
+            entityModel.add(linkTo(methodOn(TodoController.class).markItemForDeletion(todo.getId())).withRel("delete"));
+        }
+
+        if (todo.getStatus() == TodoNote.STATUS.DELETED) {
+            entityModel.add(linkTo(methodOn(TodoController.class).resetItem(todo.getId())).withRel("reset"));
+        }
+
+        return entityModel;
     }
 }

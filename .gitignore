@@ -1,4 +1,3 @@
 /.idea/
 TODOsAPI.iml
-/target
-/target/*
+/target/
